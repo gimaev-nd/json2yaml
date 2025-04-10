@@ -1,0 +1,25 @@
+services:
+  app:
+    build:
+      dockerfile_inline: |
+        FROM python:3-alpine
+
+        RUN apk update && apk add build-base python3-dev linux-headers pcre-dev && pip install flask ruyaml gunicorn
+        WORKDIR /src
+
+    environment:
+      FLASK_APP: main
+    volumes:
+      - ./src:/src
+    ports:
+      - 5000:8000
+    restart: always
+    working_dir: /src
+    command: gunicorn -w 2 'main:app' --access-logfile=- -b 0.0.0.0
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.json2yaml.loadbalancer.server.port=8000
+      - traefik.http.routers.json2yaml.rule=Host(`json2yaml.gimaev-nd.ru`)
+      - traefik.http.routers.json2yaml.entrypoints=https
+      - traefik.http.routers.json2yaml.tls=true
+      - traefik.http.routers.json2yaml.tls.certresolver=letsEncrypt

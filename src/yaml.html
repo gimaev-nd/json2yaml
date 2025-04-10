@@ -1,0 +1,18 @@
+<form id="yaml-form"><textarea name="yaml" id="yaml_editor">---
+    # <- yaml supports comments, json does not
+    # did you know you can embed json in yaml?
+    # try uncommenting the next line
+    # { foo: 'bar' }
+    
+    json:
+        - rigid
+        - better for data interchange
+</textarea>
+    <script>
+        var yaml_editor = CodeMirror.fromTextArea(document.getElementById("yaml_editor"), {
+            lineNumbers: true, // Показать номера строк
+            mode: "yaml", // Режим синтаксиса
+            theme: "monokai" // Устанавливаем тему Monokai
+        });
+    </script>
+</form>

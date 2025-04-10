@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON-Yaml Editor</title>
+    <link rel="stylesheet" href="static/codemirror/monokai.min.css" />
+    <link rel="stylesheet" href="static/codemirror/codemirror.min.css" />
+    <link rel="stylesheet" href="static/css/my.css">
+    <script src="static/codemirror/codemirror.min.js"></script>
+    <script src="static/codemirror/sublime.min.js"></script>
+    <script src="static/codemirror/yaml.min.js"></script>
+    <script src="static/codemirror/javascript.min.js"></script>
+    <script src="static/js/htmx.min.js"></script>
+</head>
+
+<body>
+    <div class="columns">
+        <div class="lang">
+            <h2 class="header" hx-get="yaml.html" hx-trigger="click"
+            hx-target="#yaml-form" hx-swap="outerHTML">JSON</h2>
+            <div class="code">
+                <form id="json-form" hx-get="yaml.html" hx-trigger="keyup"
+                    hx-target="#yaml" hx-swap="outerHTML">
+                    <textarea name="json" id="json_editor">{
+    "json": [
+        "rigid",
+        "better for data interchange"
+    ],
+    "yaml": [
+        "slim and flexible",
+        "better for configuration"
+    ],
+    "object": {
+        "key": "value",
+        "array": [
+        {
+            "null_value": null
+        },
+        {
+            "boolean": true
+        },
+        {
+            "integer": 1
+        },
+        {
+            "alias": "aliases are like variables"
+        },
+        {
+            "alias": "aliases are like variables"
+        }
+        ]
+    },
+    "paragraph": "Blank lines denote\nparagraph breaks\n",
+    "content": "Or we\ncan auto\nconvert line breaks\nto save space",
+    "alias": {
+        "bar": "baz"
+    },
+    "alias_reuse": {
+        "bar": "baz"
+    }
+}</textarea>
+                    <script>
+                        var json_editor = CodeMirror.fromTextArea(document.getElementById("json_editor"), {
+                            lineNumbers: true, // Показать номера строк
+                            mode: "application/json", // Режим синтаксиса
+                            theme: "monokai" // Устанавливаем тему Monokai
+                        });
+                    </script>
+                </form>
+            </div>
+        </div>
+        <div class="lang">
+            <h2 class="header">YAML</h2>
+            <div class="code">
+                <form id="yaml-form"><textarea name="yaml" id="yaml_editor">---
+# <- yaml supports comments, json does not
+# did you know you can embed json in yaml?
+# try uncommenting the next line
+# { foo: 'bar' }
+
+json:
+    - rigid
+    - better for data interchange
+yaml: 
+    - slim and flexible
+    - better for configuration
+object:
+    key: value
+    array:
+    - null_value:
+    - boolean: true
+    - integer: 1
+    - alias: &example aliases are like variables
+    - alias: *example
+paragraph: >
+    Blank lines denote
+
+    paragraph breaks
+content: |-
+    Or we
+    can auto
+    convert line breaks
+    to save space
+alias: &foo
+    bar: baz
+alias_reuse: *foo</textarea>
+                    <script>
+                        var yaml_editor = CodeMirror.fromTextArea(document.getElementById("yaml_editor"), {
+                            lineNumbers: true, // Показать номера строк
+                            mode: "yaml", // Режим синтаксиса
+                            theme: "monokai" // Устанавливаем тему Monokai
+                        });
+                    </script>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
