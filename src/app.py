@@ -2,13 +2,15 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from litestar import Litestar, get, post
+from litestar import Litestar, Response, get, post
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.response import Template
 from litestar.template.config import TemplateConfig
 from litestar.static_files import create_static_files_router
-import ruyaml as yaml
+import ruyaml
 from helpers import as_pretty_json, as_yaml, get_error
+
+yaml = ruyaml.YAML(typ="safe")
 
 
 @dataclass
@@ -31,9 +33,10 @@ def index() -> Template:
 @post("/api/yaml-to-json", sync_to_thread=False)
 def y2j(data: Text) -> str:
     try:
-        return as_pretty_json(yaml.load(data.text))
+        value = yaml.load(data.text)
+        return as_pretty_json(value)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
-        return get_error(e), 422
+        return Response(get_error(e), status_code=422)
 
 
 @post("/api/json-to-yaml", sync_to_thread=False)
