@@ -9,3 +9,8 @@ dependencies = [
     "litestar>=2.15.2",
     "uvicorn>=0.34.0",
 ]
+
+[dependency-groups]
+dev = [
+    "djlint>=1.36.4",
+]
