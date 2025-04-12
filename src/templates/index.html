@@ -13,88 +13,18 @@
 </head>
 
 <body class="px-4 bg-gray-950">
-    <div class="columns-2 gap-4 pt-2">
+    <div class="columns-2 gap-2 pt-2">
         <div class="lang border-2">
             <h2 class="header font-bold text-yellow-600 pl-4 py-2 mb-1 border-1 border-solid border-yellow-900 bg-[#1e1e1e]">JSON</h2>
-            <div id='json-editor' class="code h-[90svh] border-1 border-solid border-yellow-900">
-                <pre id='json-editor-text'>{
-    "json": [
-        "rigid",
-        "better for data interchange"
-    ],
-    "yaml": [
-        "slim and flexible",
-        "better for configuration"
-    ],
-    "object": {
-        "key": "value",
-        "array": [
-        {
-            "null_value": null
-        },
-        {
-            "boolean": true
-        },
-        {
-            "integer": 1
-        },
-        {
-            "alias": "aliases are like variables"
-        },
-        {
-            "alias": "aliases are like variables"
-        }
-        ]
-    },
-    "paragraph": "Blank lines denote\nparagraph breaks\n",
-    "content": "Or we\ncan auto\nconvert line breaks\nto save space",
-    "alias": {
-        "bar": "baz"
-    },
-    "alias_reuse": {
-        "bar": "baz"
-    }
-}
-</pre>
+            <div id="json-editor" class="code h-[90svh] border-1 border-solid border-yellow-900">
+                <pre id='json-editor-text'>{% include 'example.json'%}</pre>
             </div>
         </div>
         <span class="break-inside-avoid-column"></span>
         <div class="lang">
             <h2 class="header font-bold text-yellow-600 pl-4 py-2 mb-1 border-1 border-solid border-yellow-900 bg-[#1e1e1e]">YAML</h2>
-            <div id='yaml-editor' class="code h-[90svh] border-1 border-solid border-yellow-900">
-                <pre id='yaml-editor-text'>
-# <- yaml supports comments, json does not
-# did you know you can embed json in yaml?
-# try uncommenting the next line
-# { foo: 'bar' }
-
-json:
-    - rigid
-    - better for data interchange
-yaml: 
-    - slim and flexible
-    - better for configuration
-object:
-    key: value
-    array:
-    - null_value:
-    - boolean: true
-    - integer: 1
-    - alias: &example aliases are like variables
-    - alias: *example
-paragraph: >
-    Blank lines denote
-
-    paragraph breaks
-content: |-
-    Or we
-    can auto
-    convert line breaks
-    to save space
-alias: &foo
-    bar: baz
-alias_reuse: *foo
-</pre>
+            <div id="yaml-editor" class="code h-[90svh] border-1 border-solid border-yellow-900">
+                <pre id='yaml-editor-text'>{% include 'example.yaml'%}</pre>
             </div>
         </div>
     </div>
