@@ -41,8 +41,13 @@ def y2j(data: Text) -> str:
 
 @post("/api/json-to-yaml", sync_to_thread=False)
 def j2y(data: Text) -> str:
-    data = json.loads(data.text)
-    return as_yaml(data)
+    try:
+        data = json.loads(data.text)
+        return as_yaml(data)
+    except json.JSONDecodeError as e:
+        return Response(get_error(e), status_code=422)
+    except Exception as e:
+        return Response(get_error(e), status_code=422)
 
 
 app = Litestar(
