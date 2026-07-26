@@ -19,7 +19,7 @@ class Text:
 
 
 template_config = TemplateConfig(
-    directory=Path("templates"), engine=JinjaTemplateEngine
+    directory=Path("static/site"), engine=JinjaTemplateEngine
 )
 
 static = create_static_files_router(path="/static", directories=["static"])

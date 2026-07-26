@@ -19,21 +19,20 @@ Monaco на одной странице; правки в одном автома
 
 - `src/app.py` — точка входа Litestar: роуты, конфиг шаблонов и статики.
 - `src/helpers.py` — утилиты конвертации (`as_yaml`, `as_pretty_json`, `get_error`).
-- `src/templates/` — Jinja2-шаблоны (`index.html`, примеры `example.json/yaml`).
+- `src/static/site/` — Jinja2-шаблоны (`index.html`, примеры `example.json/yaml`).
 - `src/static/js/app.js` — логика редакторов и синхронизации через API.
 - `src/static/vendor/` — сторонние библиотеки, закоммичены в репозиторий.
   **Не редактировать и не форматировать.**
-- `src_old/` — устаревшая версия (FastAPI + htmx). Не трогать, не импортировать.
 
 ## Команды
 
 ```bash
 uv sync                          # установка зависимостей
 cd src && uv run uvicorn app:app --reload   # запуск dev-сервера
-uv run djlint src/templates --check         # линт шаблонов (dev-зависимость)
+uv run djlint src/static/site --check      # линт шаблонов (dev-зависимость)
 ```
 
-⚠️ Запускать uvicorn нужно из каталога `src/`: пути `templates/` и `static/`
+⚠️ Запускать uvicorn нужно из каталога `src/`: пути `static/site/` и `static/`
 в `app.py` относительные. Тестов пока нет — проверка «вживую» через API.
 
 ## API (контракт, менять согласованно с фронтом)
