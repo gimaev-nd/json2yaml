@@ -5,26 +5,27 @@ require.config({ paths: { 'vs': vs } });
 let debounceTimer = null;
 let isUpdating = false;
 
-require(['vs/editor/editor.main'], function () {
-    function createEditor(lang) {
-        const jsonEditorTextElement = document.getElementById(`${lang}-editor-text`);
-        const json_value = jsonEditorTextElement.textContent;
-        jsonEditorTextElement.remove()
+require(['vs/editor/editor.main'], async function () {
+    // Начальное содержимое редакторов — примеры из статики
+    const [jsonExample, yamlExample] = await Promise.all([
+        fetch('static/site/example.json').then((r) => r.text()),
+        fetch('static/site/example.yaml').then((r) => r.text()),
+    ]);
 
-        // Создаем редактор
-        const jsonEditorElement = document.getElementById(`${lang}-editor`);
-        return monaco.editor.create(jsonEditorElement, {
-            value: json_value,
+    function createEditor(lang, value) {
+        const editorElement = document.getElementById(`${lang}-editor`);
+        return monaco.editor.create(editorElement, {
+            value: value,
             language: lang,
             theme: 'vs-dark',
             automaticLayout: true
         });
     }
-    window.jsonEditor = createEditor('json');
+    window.jsonEditor = createEditor('json', jsonExample);
     jsonEditor.getModel().onDidChangeContent(console.log);
     jsonEditor.getModel().onDidChangeContent(need_yaml_update);
 
-    window.yamlEditor = createEditor('yaml');
+    window.yamlEditor = createEditor('yaml', yamlExample);
     yamlEditor.getModel().onDidChangeContent(console.log);
     yamlEditor.getModel().onDidChangeContent(need_json_update);
 });

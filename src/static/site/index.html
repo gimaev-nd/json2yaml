@@ -1,36 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="json,yaml" />
-    <meta name="description" content="Редактор-конвертер для JSON и YAML"/>
-    <title>json2yaml.ru: JSON - YAML, туда и обратно</title>
-    <script src="static/vendor/tailwind/js/browser.js"></script>
-    <script src="static/vendor/monaco-editor/min/vs/loader.js"></script>
-    <script src="static/js/app.js"></script>
-    <!-- <link rel="stylesheet" href="/static/css/app.css"> -->
-</head>
-
-<body class="px-4 bg-gray-950">
-    {% macro header_style() %}header font-bold text-yellow-600 pl-4 py-2 mb-1 border-1 border-solid border-yellow-900 bg-[#1e1e1e]{% endmacro %}
-    <div class="columns-2 gap-2 pt-2">
-        <div class="lang border-2">
-            <h2 class="{{ header_style() }}">JSON</h2>
-            <div id="json-editor" class="code h-[90svh] border-1 border-solid border-yellow-900">
-                <pre id='json-editor-text'>{% include 'example.json'%}</pre>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="keywords" content="json,yaml" />
+        <meta name="description" content="Редактор-конвертер для JSON и YAML" />
+        <title>json2yaml.ru: JSON - YAML, туда и обратно</title>
+        <script src="static/vendor/tailwind/js/browser.js"></script>
+        <script src="static/vendor/monaco-editor/min/vs/loader.js"></script>
+        <script src="static/js/app.js"></script>
+        <!-- <link rel="stylesheet" href="/static/css/app.css"> -->
+    </head>
+    <body class="px-4 bg-gray-950">
+        <div class="columns-2 gap-2 pt-2">
+            <div class="lang border-2">
+                <h2 class="header font-bold text-yellow-600 pl-4 py-2 mb-1 border-1 border-solid border-yellow-900 bg-[#1e1e1e]">
+                    JSON
+                </h2>
+                <div id="json-editor"
+                     class="code h-[90svh] border-1 border-solid border-yellow-900"></div>
+            </div>
+            <span class="break-inside-avoid-column"></span>
+            <div class="lang">
+                <h2 class="header font-bold text-yellow-600 pl-4 py-2 mb-1 border-1 border-solid border-yellow-900 bg-[#1e1e1e]">
+                    YAML
+                </h2>
+                <div id="yaml-editor"
+                     class="code h-[90svh] border-1 border-solid border-yellow-900"></div>
             </div>
         </div>
-        <span class="break-inside-avoid-column"></span>
-        <div class="lang">
-            <h2 class="{{ header_style() }}">YAML</h2>
-            <div id="yaml-editor" class="code h-[90svh] border-1 border-solid border-yellow-900">
-                <pre id='yaml-editor-text'>{% include 'example.yaml'%}</pre>
-            </div>
-        </div>
-    </div>
-</body>
-
+    </body>
 </html>

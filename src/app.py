@@ -1,11 +1,8 @@
 from dataclasses import dataclass
 import json
-from pathlib import Path
 
 from litestar import Litestar, Response, get, post
-from litestar.contrib.jinja import JinjaTemplateEngine
-from litestar.response import Template
-from litestar.template.config import TemplateConfig
+from litestar.response import File
 from litestar.static_files import create_static_files_router
 import ruyaml
 from helpers import as_pretty_json, as_yaml, get_error
@@ -18,16 +15,16 @@ class Text:
     text: str
 
 
-template_config = TemplateConfig(
-    directory=Path("static/site"), engine=JinjaTemplateEngine
-)
-
 static = create_static_files_router(path="/static", directories=["static"])
 
 
 @get(path="/", sync_to_thread=False)
-def index() -> Template:
-    return Template(template_name="index.html")
+def index() -> File:
+    return File(
+        path="static/site/index.html",
+        media_type="text/html",
+        content_disposition_type="inline",
+    )
 
 
 @post("/api/yaml-to-json", sync_to_thread=False)
@@ -50,6 +47,4 @@ def j2y(data: Text) -> str:
         return Response(get_error(e), status_code=422)
 
 
-app = Litestar(
-    route_handlers=[index, static, y2j, j2y], template_config=template_config
-)
+app = Litestar(route_handlers=[index, static, y2j, j2y])

@@ -10,16 +10,18 @@ Monaco на одной странице; правки в одном автома
 
 ## Стек
 
-- **Бэкенд:** Python ≥ 3.13, Litestar 2.x, ruyaml, Jinja2, uvicorn.
+- **Бэкенд:** Python ≥ 3.13, Litestar 2.x, ruyaml, uvicorn. Шаблонизатора нет:
+  `index.html` — обычная статика, отдаётся как файл.
 - **Фронтенд:** vanilla JS, Monaco Editor, Tailwind (browser-сборка) — всё лежит
   локально в `src/static/vendor/`, сборки и npm нет.
 - **Пакетный менеджер:** uv (`pyproject.toml` + `uv.lock`). pip/poetry не используем.
 
 ## Структура
 
-- `src/app.py` — точка входа Litestar: роуты, конфиг шаблонов и статики.
+- `src/app.py` — точка входа Litestar: роуты, отдача `index.html` и статики.
 - `src/helpers.py` — утилиты конвертации (`as_yaml`, `as_pretty_json`, `get_error`).
-- `src/static/site/` — Jinja2-шаблоны (`index.html`, примеры `example.json/yaml`).
+- `src/static/site/` — статичная страница `index.html` и примеры `example.json/yaml`
+  (фронт подгружает их fetch'ем при старте).
 - `src/static/js/app.js` — логика редакторов и синхронизации через API.
 - `src/static/vendor/` — сторонние библиотеки, закоммичены в репозиторий.
   **Не редактировать и не форматировать.**
@@ -29,7 +31,7 @@ Monaco на одной странице; правки в одном автома
 ```bash
 uv sync                          # установка зависимостей
 cd src && uv run uvicorn app:app --reload   # запуск dev-сервера
-uv run djlint src/static/site --check      # линт шаблонов (dev-зависимость)
+uv run djlint src/static/site --check      # линт index.html (dev-зависимость)
 ```
 
 ⚠️ Запускать uvicorn нужно из каталога `src/`: пути `static/site/` и `static/`
@@ -54,4 +56,4 @@ uv run djlint src/static/site --check      # линт шаблонов (dev-за
 - Коммиты: короткое сообщение на русском в повелительном наклонении, как в истории
   («Фронт: получение данных с бека», «API конвертации»).
 - В `index.html` Tailwind-классы форматируются djlint — перед коммитом прогонять
-  `djlint --reformat` при правках шаблонов.
+  `djlint --reformat` при правках страницы.
