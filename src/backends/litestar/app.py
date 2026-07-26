@@ -6,6 +6,8 @@ from litestar import Litestar, Response, get, post
 from litestar.response import File
 from litestar.static_files import create_static_files_router
 import ruyaml
+from ruyaml.parser import ParserError
+from ruyaml.scanner import ScannerError
 from helpers import as_pretty_json, as_yaml, get_error
 
 yaml = ruyaml.YAML(typ="safe")
@@ -31,16 +33,16 @@ def index() -> File:
     )
 
 
-@post("/api/yaml-to-json", sync_to_thread=False)
+@post("/api/yaml-to-json", status_code=200, sync_to_thread=False)
 def y2j(data: Text) -> str:
     try:
         value = yaml.load(data.text)
         return as_pretty_json(value)
-    except (yaml.scanner.ScannerError, yaml.parser.ParserError) as e:
+    except (ScannerError, ParserError) as e:
         return Response(get_error(e), status_code=422)
 
 
-@post("/api/json-to-yaml", sync_to_thread=False)
+@post("/api/json-to-yaml", status_code=200, sync_to_thread=False)
 def j2y(data: Text) -> str:
     try:
         data = json.loads(data.text)
