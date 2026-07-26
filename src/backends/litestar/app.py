@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import json
+from pathlib import Path
 
 from litestar import Litestar, Response, get, post
 from litestar.response import File
@@ -9,19 +10,22 @@ from helpers import as_pretty_json, as_yaml, get_error
 
 yaml = ruyaml.YAML(typ="safe")
 
+# Общая статика всех бекендов: src/static (бекенды лежат в src/backends/<имя>/)
+STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "static"
+
 
 @dataclass
 class Text:
     text: str
 
 
-static = create_static_files_router(path="/static", directories=["static"])
+static = create_static_files_router(path="/static", directories=[STATIC_DIR])
 
 
 @get(path="/", sync_to_thread=False)
 def index() -> File:
     return File(
-        path="static/site/index.html",
+        path=STATIC_DIR / "site" / "index.html",
         media_type="text/html",
         content_disposition_type="inline",
     )

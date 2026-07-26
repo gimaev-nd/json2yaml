@@ -18,8 +18,11 @@ Monaco на одной странице; правки в одном автома
 
 ## Структура
 
-- `src/app.py` — точка входа Litestar: роуты, отдача `index.html` и статики.
-- `src/helpers.py` — утилиты конвертации (`as_yaml`, `as_pretty_json`, `get_error`).
+- `src/backends/<имя>/` — бекенды (пока один: `litestar`). У каждого свои
+  `app.py` (точка входа: роуты, отдача `index.html` и статики) и `helpers.py`
+  (утилиты конвертации `as_yaml`, `as_pretty_json`, `get_error`). Путь к общей
+  статике вычисляется от `__file__`, поэтому бекенд можно запускать из любого
+  каталога.
 - `src/static/site/` — статичная страница `index.html` и примеры `example.json/yaml`
   (фронт подгружает их fetch'ем при старте).
 - `src/static/js/app.js` — логика редакторов и синхронизации через API.
@@ -29,25 +32,27 @@ Monaco на одной странице; правки в одном автома
 ## Команды
 
 ```bash
-uv sync                          # установка зависимостей
-cd src && uv run uvicorn app:app --reload   # запуск dev-сервера
-uv run djlint src/static/site --check      # линт index.html (dev-зависимость)
+make install    # установка зависимостей (uv sync)
+make run        # запуск dev-сервера (по умолчанию бекенд litestar;
+                # другой бекенд: make run BACKEND=<имя>)
+make lint       # линт index.html (djlint, dev-зависимость)
 ```
 
-⚠️ Запускать uvicorn нужно из каталога `src/`: пути `static/site/` и `static/`
-в `app.py` относительные. Тестов пока нет — проверка «вживую» через API.
+Без make: `cd src/backends/litestar && uv run uvicorn app:app --reload`.
+Пути к статике в `app.py` вычисляются от `__file__`, поэтому каталог запуска
+не важен. Тестов пока нет — проверка «вживую» через API.
 
 ## API (контракт, менять согласованно с фронтом)
 
 - `POST /api/json-to-yaml` и `POST /api/yaml-to-json`
-- Тело: JSON `{"text": "<исходный текст>"}` (см. `Text` в `app.py`).
+- Тело: JSON `{"text": "<исходный текст>"}` (см. `Text` в `app.py` бекенда).
 - Успех: `200`, тело — результат конвертации как plain text.
 - Ошибка парсинга: `422`, тело — описание ошибки в формате YAML (`get_error`).
 
 ## Соглашения по коду
 
 - Конвертация YAML — только через `ruyaml` (safe-трюк на чтение, кастомный дампер
-  с отступом 2 в `helpers.py`); `pyyaml` не добавлять.
+  с отступом 2 в `helpers.py` бекенда); `pyyaml` не добавлять.
 - JSON всегда сериализуем с `ensure_ascii=False` — кириллица не должна уезжать
   в `\uXXXX`.
 - Хендлеры синхронные с `sync_to_thread=False` — не добавлять в них блокирующий
