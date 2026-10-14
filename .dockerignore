@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+.vscode
+.venv
+__pycache__
+*.pyc
+
+# Устаревшая версия приложения, в образ не нужна
+src_old
+compose_old.yml
