@@ -29,9 +29,10 @@ RUN groupadd --system --gid 1000 app \
 COPY --from=builder --chown=app:app /opt/venv /opt/venv
 COPY --chown=app:app src /app/src
 
-# Приложение читает templates/ и static/ по относительным путям,
-# поэтому рабочий каталог — /app/src.
-WORKDIR /app/src
+# Рабочий каталог — каталог litestar-бекенда: uvicorn импортирует app:app
+# из текущего каталога (как в `make run`). Пути к статике в app.py считаются
+# от __file__, поэтому от cwd они не зависят.
+WORKDIR /app/src/backends/litestar
 USER app
 
 EXPOSE 8000

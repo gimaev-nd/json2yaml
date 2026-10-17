@@ -53,9 +53,94 @@ jobs:
         if: failure()
         run: cat /tmp/json2yaml-test-server.log || true
 
-  build-and-push:
-    # Образ собирается и публикуется только если тесты зелёные
+  # Дымовой прогон собранного образа: контрактные тесты гоняют код из репозитория,
+  # но не проверяют Dockerfile (WORKDIR, CMD, слои). Импорт модуля в образе уже
+  # ломался при переезде бекенда в src/backends/<имя>, поэтому здесь образ
+  # собирается локально, запускается и проверяется по HTTP.
+  docker-smoke:
     needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # load: true — образ остаётся в локальном демоне и его можно запустить
+      - name: Собрать образ локально
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: json2yaml:smoke
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Запустить контейнер и проверить HTTP
+        run: |
+          set -euo pipefail
+
+          IMAGE=json2yaml:smoke
+          PORT=8000
+
+          fail() {
+            echo "::error::$1"
+            docker logs smoke || true
+            exit 1
+          }
+
+          docker run -d --name smoke -p "${PORT}:8000" "$IMAGE"
+
+          # Если приложение не импортировалось, контейнер завершается сразу
+          # и curl не ответит никогда — поэтому смотрим и на состояние.
+          ready=0
+          for _ in $(seq 1 30); do
+            if curl -sf "http://127.0.0.1:${PORT}/" -o /dev/null; then
+              ready=1
+              break
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' smoke 2>/dev/null)" != "true" ]; then
+              fail "Контейнер завершился при старте"
+            fi
+            sleep 1
+          done
+          [ "$ready" = 1 ] || fail "Сервер не ответил на / за 30 с"
+
+          status=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${PORT}/")
+          [ "$status" = 200 ] || fail "GET / вернул ${status}, ожидался 200"
+
+          status=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${PORT}/static/js/app.js")
+          [ "$status" = 200 ] || fail "GET /static/js/app.js вернул ${status}, ожидался 200"
+
+          body=$(curl -s -X POST -H 'Content-Type: application/json' \
+            -d '{"text":"{\"a\": 1}"}' "http://127.0.0.1:${PORT}/api/json-to-yaml")
+          [ "$body" = "a: 1" ] || fail "json-to-yaml вернул: ${body}"
+
+          body=$(curl -s -X POST -H 'Content-Type: application/json' \
+            -d '{"text":"a: 1"}' "http://127.0.0.1:${PORT}/api/yaml-to-json")
+          echo "$body" | grep -q '"a": 1' || fail "yaml-to-json вернул: ${body}"
+
+          # Ошибка разбора обязана быть 422, а не 500
+          status=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"text":"a: !!int abc"}' "http://127.0.0.1:${PORT}/api/yaml-to-json")
+          [ "$status" = 422 ] || fail "yaml-to-json на битом YAML вернул ${status}, ожидался 422"
+
+          echo "Дымовой тест образа пройден"
+
+      - name: Остановить контейнер
+        if: always()
+        run: docker rm -f smoke || true
+
+  build-and-push:
+    # Образ публикуется только если тесты зелёные и собранный образ запускается
+    needs: [tests, docker-smoke]
     runs-on: ubuntu-latest
     permissions:
       contents: read
