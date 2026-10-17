@@ -1,4 +1,4 @@
-name: Build and push image to GHCR
+name: CI
 
 on:
   push:
@@ -14,9 +14,48 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
+  # Версия hurl зафиксирована, чтобы контрактные тесты не ломались от обновления бинаря
+  HURL_VERSION: 8.0.1
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Установить hurl
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/hurl.tar.gz" \
+            "https://github.com/Orange-OpenSource/hurl/releases/download/${HURL_VERSION}/hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          sudo tar -xzf "$RUNNER_TEMP/hurl.tar.gz" -C /usr/local/bin --strip-components=2 \
+            "hurl-${HURL_VERSION}-x86_64-unknown-linux-gnu/bin/hurl"
+          hurl --version
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      # --frozen: зависимости строго из uv.lock, без его обновления
+      - name: Установить зависимости
+        run: uv sync --frozen
+
+      # make test сам поднимает бекенд на TEST_PORT, прогоняет tests/hurls/*.hurl
+      # и останавливает сервер
+      - name: Контрактные тесты (hurl)
+        run: make test
+
+      - name: Лог тестового сервера при падении
+        if: failure()
+        run: cat /tmp/json2yaml-test-server.log || true
+
   build-and-push:
+    # Образ собирается и публикуется только если тесты зелёные
+    needs: tests
     runs-on: ubuntu-latest
     permissions:
       contents: read

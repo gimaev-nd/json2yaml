@@ -6,8 +6,7 @@ from litestar import Litestar, Response, get, post
 from litestar.response import File
 from litestar.static_files import create_static_files_router
 import ruyaml
-from ruyaml.parser import ParserError
-from ruyaml.scanner import ScannerError
+from ruyaml import YAMLError
 from helpers import as_pretty_json, as_yaml, get_error
 
 yaml = ruyaml.YAML(typ="safe")
@@ -38,7 +37,12 @@ def y2j(data: Text) -> str:
     try:
         value = yaml.load(data.text)
         return as_pretty_json(value)
-    except (ScannerError, ParserError) as e:
+    except YAMLError as e:
+        return Response(get_error(e), status_code=422)
+    # ruyaml пропускает наружу не только YAMLError: например, `!!int abc`
+    # падает обычным ValueError из int(). Любая ошибка на этом шаге вызвана
+    # входным текстом, поэтому отвечаем 422, а не 500 — как в j2y.
+    except Exception as e:
         return Response(get_error(e), status_code=422)
 
 

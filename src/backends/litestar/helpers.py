@@ -33,6 +33,9 @@ def as_yaml(value):
 
 
 def get_error(exp):
-    s = as_pretty_json(vars(exp))
+    # У части исключений (например, ValueError из int()) нет атрибутов,
+    # поэтому без запасного варианта тело ошибки было бы пустым `{}`.
+    details = vars(exp) or {"msg": str(exp)}
+    s = as_pretty_json(details)
     v = json.loads(s)
     return as_yaml(v)
