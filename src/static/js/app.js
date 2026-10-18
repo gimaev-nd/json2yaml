@@ -35,7 +35,13 @@ require(['vs/editor/editor.main'], async function () {
             value: value,
             language: lang,
             theme: 'vs-dark',
-            automaticLayout: true
+            automaticLayout: true,
+            // Tab — два пробела, как в примерах и в ответах бекенда (indent=2).
+            // detectIndentation выключен: иначе Monaco подстроится под отступы
+            // вставленного текста и снова начнёт вставлять четыре.
+            tabSize: 2,
+            insertSpaces: true,
+            detectIndentation: false
         });
     }
     editors.json = window.jsonEditor = createEditor('json', jsonExample);
