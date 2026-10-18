@@ -16,15 +16,20 @@
         <!-- <link rel="stylesheet" href="/static/css/app.css"> -->
     </head>
     <body class="px-4 bg-gray-950">
+        <style>
+            .content {
+                height: calc(100svh - 64px);
+            }
+        </style>
         <div class="columns-2 gap-2 pt-2">
             <div class="lang border-2">
                 <h2 class="header font-bold text-yellow-600 pl-4 py-2 mb-1 border-1 border-solid border-yellow-900 bg-[#1e1e1e]">
                     JSON
                 </h2>
                 <div id="json-editor"
-                     class="code h-[90svh] border-1 border-solid border-yellow-900"></div>
+                     class="content code  border-1 border-solid border-yellow-900"></div>
                 <div id="json-error"
-                     class="error hidden h-[90svh] overflow-auto border-1 border-solid border-red-900 bg-[#1e1e1e] p-4 text-gray-200"
+                     class="content error hidden overflow-auto border-1 border-solid border-red-900 bg-[#1e1e1e] p-4 text-gray-200"
                      role="alert">
                     <div class="flex items-start justify-between gap-2">
                         <h3 id="json-error-title" class="font-bold text-lg text-red-400">Ошибка в YAML</h3>
@@ -47,9 +52,9 @@
                     YAML
                 </h2>
                 <div id="yaml-editor"
-                     class="code h-[90svh] border-1 border-solid border-yellow-900"></div>
+                     class="content code border-1 border-solid border-yellow-900"></div>
                 <div id="yaml-error"
-                     class="error hidden h-[90svh] overflow-auto border-1 border-solid border-red-900 bg-[#1e1e1e] p-4 text-gray-200"
+                     class="content error hidden overflow-auto border-1 border-solid border-red-900 bg-[#1e1e1e] p-4 text-gray-200"
                      role="alert">
                     <div class="flex items-start justify-between gap-2">
                         <h3 id="yaml-error-title" class="font-bold text-lg text-red-400">Ошибка в JSON</h3>
