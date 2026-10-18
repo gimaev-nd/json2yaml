@@ -23,6 +23,12 @@ class Text:
 static = create_static_files_router(path="/static", directories=[STATIC_DIR])
 
 
+def error_response(exp) -> Response:
+    # Успешный ответ роутов — plain text, поэтому без явного media_type
+    # Litestar попытается сериализовать dict ошибки как текст и упадёт в 500.
+    return Response(get_error(exp), status_code=422, media_type="application/json")
+
+
 @get(path="/", sync_to_thread=False)
 def index() -> File:
     return File(
@@ -33,28 +39,28 @@ def index() -> File:
 
 
 @post("/api/yaml-to-json", status_code=200, sync_to_thread=False)
-def y2j(data: Text) -> str:
+def y2j(data: Text) -> Response:
     try:
         value = yaml.load(data.text)
-        return as_pretty_json(value)
+        return Response(as_pretty_json(value), media_type="text/plain")
     except YAMLError as e:
-        return Response(get_error(e), status_code=422)
+        return error_response(e)
     # ruyaml пропускает наружу не только YAMLError: например, `!!int abc`
     # падает обычным ValueError из int(). Любая ошибка на этом шаге вызвана
     # входным текстом, поэтому отвечаем 422, а не 500 — как в j2y.
     except Exception as e:
-        return Response(get_error(e), status_code=422)
+        return error_response(e)
 
 
 @post("/api/json-to-yaml", status_code=200, sync_to_thread=False)
-def j2y(data: Text) -> str:
+def j2y(data: Text) -> Response:
     try:
         data = json.loads(data.text)
-        return as_yaml(data)
+        return Response(as_yaml(data), media_type="text/plain")
     except json.JSONDecodeError as e:
-        return Response(get_error(e), status_code=422)
+        return error_response(e)
     except Exception as e:
-        return Response(get_error(e), status_code=422)
+        return error_response(e)
 
 
 app = Litestar(route_handlers=[index, static, y2j, j2y])

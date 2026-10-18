@@ -1,5 +1,5 @@
-# Ошибка парсинга JSON → 422, тело — описание ошибки в формате YAML.
-# Точный текст сообщения зависит от реализации бекенда, проверяем только код.
+# Ошибка парсинга JSON → 422, тело — JSON с единым описанием ошибки:
+# message (текст для человека), line и column (позиция, с единицы).
 POST http://{{host}}/api/json-to-yaml
 Content-Type: application/json
 {
@@ -7,3 +7,8 @@ Content-Type: application/json
 }
 
 HTTP 422
+[Asserts]
+header "Content-Type" contains "application/json"
+jsonpath "$.message" == "Ожидалось значение"
+jsonpath "$.line" == 1
+jsonpath "$.column" == 13
