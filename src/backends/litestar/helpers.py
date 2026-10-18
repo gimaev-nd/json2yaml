@@ -9,6 +9,23 @@ custom_yaml = yaml.YAML()
 custom_yaml.indent(mapping=2, sequence=2, offset=0)
 
 
+def _str_representer(representer, data):
+    """Многострочные строки — блочный литерал `|`, однострочные — обычный скаляр.
+
+    Стиль скаляра в YAML — свойство узла, глобальной настройки у дампера нет,
+    поэтому выбираем его здесь: `key: value` для однострочных значений и
+    `key: |` для многострочных. Chomping (`|`/`|-`) и индикатор отступа ruyaml
+    подбирает сам, текст читается обратно без искажений; строки с ведущими
+    пробелами, табами и хвостовыми пробелами тоже остаются валидными.
+    """
+
+    style = "|" if "\n" in data else None
+    return representer.represent_scalar("tag:yaml.org,2002:str", data, style=style)
+
+
+custom_yaml.representer.add_representer(str, _str_representer)
+
+
 class PythonJSONEncoder(json.JSONEncoder):
     def default(self, o):
         # noinspection PyBroadException
