@@ -4,29 +4,28 @@
 # { foo: 'bar' }
 
 json:
-    - rigid
-    - better for data interchange
+- rigid
+- better for data interchange
 yaml:
-    - slim and flexible
-    - better for configuration
+- slim and flexible
+- better for configuration
 object:
-    key: value
-    array:
-        - null_value:
-        - boolean: true
-        - integer: 1
-        - alias: &example aliases are like variables
-        - alias: *example
+  key: value
+  array:
+  - null_value:
+  - boolean: true
+  - integer: 1
+  - alias: &example aliases are like variables
+  - alias: *example
 paragraph: >
-    Blank lines denote
+  Blank lines denote
 
-    paragraph breaks
+  paragraph breaks
 content: |-
-    Or we
-    can auto
-    convert line breaks
-    to save space
+  Or we
+  can auto
+  convert line breaks
+  to save space
 alias: &foo
-    bar: baz
+  bar: baz
 alias_reuse: *foo
-
