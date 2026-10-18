@@ -19,6 +19,8 @@ const last_request = {};
 const editors = {};
 // Язык, ошибку разбора которого показывает панель целевого редактора.
 const error_source = {};
+// Позиция ошибки для перехода по клику на «Строка N, позиция M».
+const error_point = {};
 
 require(['vs/editor/editor.main'], async function () {
     // Начальное содержимое редакторов — примеры из статики
@@ -48,6 +50,9 @@ require(['vs/editor/editor.main'], async function () {
         document
             .getElementById(`${lang}-error-close`)
             .addEventListener('click', () => hide_error(lang));
+        document
+            .getElementById(`${lang}-error-position`)
+            .addEventListener('click', () => jump_to_error(lang));
     }
 });
 
@@ -131,17 +136,21 @@ function parse_error(body) {
 
 // Ошибка показывается в колонке результата: сам результат заведомо устарел,
 // пока входной текст сломан. В редакторе с ошибкой подсвечивается строка,
-// а курсор ставится на место ошибки.
+// а перейти к позиции можно кликом по «Строка N, позиция M».
 function show_error(from_lang, to_lang, error) {
     const panel = document.getElementById(`${to_lang}-error`);
     document.getElementById(`${to_lang}-error-title`).textContent =
         `Ошибка в ${LANG_LABEL[from_lang]}`;
     document.getElementById(`${to_lang}-error-message`).textContent = error.message;
-    document.getElementById(`${to_lang}-error-position`).textContent = format_position(error);
+    const position = document.getElementById(`${to_lang}-error-position`);
+    position.textContent = format_position(error);
+    // Без позиции переходить некуда — оставляем текст, но не ссылку.
+    position.disabled = error.line == null;
 
     document.getElementById(`${to_lang}-editor`).classList.add('hidden');
     panel.classList.remove('hidden');
     error_source[to_lang] = from_lang;
+    delete error_point[to_lang];
 
     const source = editors[from_lang];
     const model = source.getModel();
@@ -152,6 +161,7 @@ function show_error(from_lang, to_lang, error) {
 
     const line = Math.min(error.line, model.getLineCount());
     const column = Math.min(error.column || 1, model.getLineMaxColumn(line));
+    error_point[to_lang] = { line, column };
     monaco.editor.setModelMarkers(model, MARKER_OWNER, [{
         severity: monaco.MarkerSeverity.Error,
         message: error.message,
@@ -160,14 +170,21 @@ function show_error(from_lang, to_lang, error) {
         endLineNumber: line,
         endColumn: model.getLineMaxColumn(line),
     }]);
+}
 
-    // Курсор не перехватываем, пока пользователь набирает текст в этой же
-    // строке: иначе каждый ответ сервера уводил бы его с места правки.
-    const caret = source.getPosition();
-    if (!source.hasTextFocus() || !caret || caret.lineNumber !== line) {
-        source.setPosition({ lineNumber: line, column });
-        source.revealPositionInCenter({ lineNumber: line, column });
-    }
+// Курсор переставляется только по явному клику на позицию ошибки: во время
+// набора текста автоматический переход уводил бы пользователя с места правки.
+function jump_to_error(to_lang) {
+    const point = error_point[to_lang];
+    const source = editors[error_source[to_lang]];
+    if (!point || !source) { return; }
+
+    const model = source.getModel();
+    const line = Math.min(point.line, model.getLineCount());
+    const column = Math.min(point.column, model.getLineMaxColumn(line));
+    source.setPosition({ lineNumber: line, column });
+    source.revealPositionInCenter({ lineNumber: line, column });
+    source.focus();
 }
 
 // Закрытие панели возвращает колонке её редактор с последним удачным
@@ -184,6 +201,7 @@ function hide_error(to_lang) {
         monaco.editor.setModelMarkers(editors[source_lang].getModel(), MARKER_OWNER, []);
     }
     delete error_source[to_lang];
+    delete error_point[to_lang];
 
     // Редактор был скрыт (display: none) — Monaco не знает его размеров,
     // пока контейнер снова не станет видимым.
